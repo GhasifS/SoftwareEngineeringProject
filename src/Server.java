@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 public class Server {
     public static final List<String> usernames = Collections.synchronizedList(new LinkedList<>());
     public static final List<PublicKey> publicKeys = Collections.synchronizedList(new LinkedList<>());
-    public static final List<Message> newMessages = Collections.synchronizedList(new LinkedList<>());
+    public static final List<Message> messages = Collections.synchronizedList(new LinkedList<>());
 
     public static void main(String[] args) throws IOException {
         ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -32,7 +32,7 @@ public class Server {
                 e.printStackTrace();
                 continue;
             }
-            ServerThread thread = new ServerThread(socket, usernames, publicKeys, newMessages);
+            ServerThread thread = new ServerThread(socket, usernames, publicKeys, messages);
             threadPool.execute(thread);
         }
     }

@@ -72,7 +72,6 @@ public class Client {
                         } else {
                             set(input);
                             output = this.socketInput.readNBytes(4);
-                            System.out.println(Arrays.toString(output));
                             if (output[0] == 'S') {
                                 this.id = output[3];
                                 this.mode = OutputMode.CMD;
@@ -89,13 +88,11 @@ public class Client {
                     }
                     break;
                 case LST:
-                    System.out.println("Requesting list of users from the server.\n");
+                    System.out.println("Requesting list of users from the server.");
                     lst();
                     output = this.socketInput.readNBytes(3);
-                    System.out.println(Arrays.toString(output));
                     if (output[0] == 'L') {
                         int len = this.socketInput.readNBytes(1)[0] * 17;
-                        System.out.println(len);
                         output = this.socketInput.readNBytes(len);
                         for (int i = 0; i < output.length / 17; i++) {
                             System.out.print("(" + output[i * 17] + ") ");
@@ -153,7 +150,7 @@ public class Client {
                     }
                     id = Byte.parseByte(input);
                     System.out.println("Getting last 10 messages.");
-                    get(id);
+                    get(id, (byte)10);
                     int numberOfMessages = socketInput.readNBytes(5)[4];
                     for (int i = 0; i < numberOfMessages; i++) {
                         byte[] message = socketInput.readNBytes(512 + socketInput.readNBytes(1)[0] * 16);
@@ -190,8 +187,8 @@ public class Client {
         return messages;
     }
 
-    private void get(byte authorID) throws IOException {
-        socketOutput.write(new byte[] {'G', 'E', 'T', authorID, 10});
+    private void get(byte authorID, byte numberToGet) throws IOException {
+        socketOutput.write(new byte[] {'G', 'E', 'T', authorID, numberToGet});
     }
 
     private void msg(byte recipientID, String message) throws IOException {
@@ -219,8 +216,6 @@ public class Client {
         output[4] = (byte)(encryptedMessage.length / 16);
         System.arraycopy(encryptedKey, 0, output, 5, encryptedKey.length);
         System.arraycopy(encryptedMessage, 0, output, 5 + encryptedKey.length, encryptedMessage.length);
-        System.out.println(output.length);
-        System.out.println(Arrays.toString(output));
         socketOutput.write(output);
     }
 
@@ -233,7 +228,6 @@ public class Client {
     }
 
     private void set(String username) throws IOException {
-        System.out.println("setting: " + username);
         byte[] output = new byte[3 + 16 + 550];
         output[0] = 'S';
         output[1] = 'E';
@@ -241,9 +235,6 @@ public class Client {
         System.arraycopy(username.getBytes(StandardCharsets.US_ASCII), 0, output, 3, username.length());
         System.arraycopy(this.keyPair.getPublic().getEncoded(), 0, output, 3 + 16, 550);
         socketOutput.write(output);
-        socketOutput.flush();
-        System.out.println(Arrays.toString(output));
-        System.out.println("sent?");
     }
 
     private boolean modeSwitched(String input) {
@@ -274,7 +265,6 @@ public class Client {
     }
 
     public static String toBase64(byte[] data) {
-//        return new String(data, StandardCharsets.US_ASCII);
         return Base64.getEncoder().encodeToString(data);
     }
 

@@ -5,7 +5,6 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ServerThread implements Runnable {
@@ -14,46 +13,37 @@ public class ServerThread implements Runnable {
     private final OutputStream socketOutput;
     private final List<String> usernames;
     private final List<PublicKey> publicKeys;
-    private final List<Message> newMessages;
+    private final List<Message> messages;
 
     private byte id = -1;
 
-    public ServerThread(Socket socket, List<String> usernames, List<PublicKey> publicKeys, List<Message> newMessages) throws IOException {
+    public ServerThread(Socket socket, List<String> usernames, List<PublicKey> publicKeys, List<Message> messages) throws IOException {
         this.socket = socket;
         this.socketInput = socket.getInputStream();
         this.socketOutput = socket.getOutputStream();
         this.usernames = usernames;
         this.publicKeys = publicKeys;
-        this.newMessages = newMessages;
+        this.messages = messages;
     }
 
     @Override
     public void run() {
         while (socket.isConnected()) {
-            System.out.println("a");
             byte[] input = new byte[3];
             try {
-                System.out.println("b");
                 socketInput.readNBytes(input, 0, 3);
-                System.out.println("c");
-                System.out.println(Arrays.toString(input));
-                String command = "" + String.valueOf((char)(input[0]) + "" + (char)(input[1]) + "" + (char)(input[2]));
-                System.out.println(command);
+                String command = "" + (char)(input[0]) + (char)(input[1]) + (char)(input[2]);
                 switch (command) {
                     case "SET":
                         input = socketInput.readNBytes(16);
                         String username = "";
-
-                        System.out.println(Arrays.toString(input));
                         for (int i = 0; i < 16; i++) {
                             if (input[i] == 0) {
                                 break;
                             }
                             username += (char)input[i];
                         }
-                        System.out.println(username);
                         byte[] key = socketInput.readNBytes(550);
-                        System.out.println("got key");
                         PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(key));
                         int index = publicKeys.indexOf(publicKey);
                         if (index == -1) {
@@ -64,18 +54,13 @@ public class ServerThread implements Runnable {
                             usernames.set(index, username);
                         }
                         this.id = (byte)index;
-                        System.out.println("writing");
                         socketOutput.write(new byte[] {'S', 'E', 'T', (byte)index});
-                        System.out.println("wrote");
-                        System.out.println(Arrays.toString(usernames.toArray()));
-                        System.out.println(Arrays.toString(publicKeys.toArray()));
                         break;
                     case "LST":
                         input = new byte[4 + (17 * usernames.size())];
                         input[0] = 'L';
                         input[1] = 'S';
                         input[2] = 'T';
-                        System.out.println(usernames.size());
                         input[3] = (byte)usernames.size();
                         for (int i = 0; i < usernames.size(); i++) {
                             input[4 + (i * 17)] = (byte)i;
@@ -96,18 +81,21 @@ public class ServerThread implements Runnable {
                         break;
                     case "MSG":
                         byte recipientID = socketInput.readNBytes(1)[0];
-                        byte[] message = socketInput.readNBytes(512 + (16 * socketInput.readNBytes(1)[0]));
-                        newMessages.add(new Message(this.id, recipientID, message));
+                        this.messages.add(new Message(this.id, recipientID, socketInput.readNBytes(512 + (16 * socketInput.readNBytes(1)[0]))));
                         break;
                     case "GET":
                         byte authorID = socketInput.readNBytes(1)[0];
                         int requestedNumber = socketInput.readNBytes(1)[0];
                         int responseLength = 3 + 1 + 1;
-                        ArrayList<Message> newMesses = new ArrayList<>(requestedNumber);
-                        for (final Message newMessage : newMessages) {
-                            if (newMessage.authorID == authorID && newMessage.recipientID == this.id) {
-                                newMesses.add(newMessage);
-                                responseLength += 1 + newMessage.message.length;
+                        ArrayList<Message> requestedMessages = new ArrayList<>(requestedNumber);
+                        for (int i = this.messages.size() - 1; i >= 0; i--) {
+                            Message message = this.messages.get(i);
+                            if (message.authorID == authorID && message.recipientID == this.id) {
+                                requestedMessages.add(message);
+                                responseLength += 1 + message.message.length;
+                            }
+                            if (requestedMessages.size() == requestedNumber) {
+                                break;
                             }
                         }
                         input = new byte[responseLength];
@@ -115,13 +103,14 @@ public class ServerThread implements Runnable {
                         input[1] = 'E';
                         input[2] = 'T';
                         input[3] = authorID;
-                        input[4] = (byte)newMesses.size();
+                        input[4] = (byte)requestedMessages.size();
                         int pointer = 5;
-                        for (Message newMess : newMesses) {
-                            message = newMess.message;
-                            input[pointer++] = (byte)((message.length - 512) / 16);
-                            System.arraycopy(message, 0, input, pointer, message.length);
-                            pointer += message.length;
+                        for (int i = requestedMessages.size() - 1; i >= 0; i--) {
+                            Message message = requestedMessages.get(i);
+                            byte[] msg = message.message;
+                            input[pointer++] = (byte)((msg.length - 512) / 16);
+                            System.arraycopy(msg, 0, input, pointer, msg.length);
+                            pointer += msg.length;
                         }
                         socketOutput.write(input);
                         break;
