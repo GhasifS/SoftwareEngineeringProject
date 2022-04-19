@@ -1,3 +1,5 @@
+package application;
+
 public class Message {
     public final byte authorID;
     public final byte recipientID;
