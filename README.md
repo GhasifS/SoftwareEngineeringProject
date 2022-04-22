@@ -36,13 +36,13 @@ Briefly describe what your project is all about.
 ### Installation and Setup
 1. Download the code
 2. Configure the server with the correct database connection information. Set this in `contactDB.java`
-3. Optionally configure the server and clients to connect on a different address than the default (localhost:2020).
+3. Optionally configure the server and clients to connect on a different address than the default (`localhost:2020`).
 4. Compile the code
 
 ### Usage
-Run Server.main to start the server. It will listen for connections on the configured port (default 2020).
-Run Client.main to start the text client. It will connect to the server on the configured port and address (default localhost:2020).
-Run UI.main to start the graphical client. It will connect to the server on the configured port and address (default localhost:2020).
+Run Server.main to start the server. It will listen for connections on the configured port (default `2020`).
+Run Client.main to start the text client. It will connect to the server on the configured port and address (default `localhost:2020`).
+Run UI.main to start the graphical client. It will connect to the server on the configured port and address (default `localhost:2020`).
 
 ## Demo video
 Coming soon!
