@@ -15,13 +15,14 @@ import java.util.List;
 //https://stackoverflow.com/questions/11775212/how-to-save-the-result-from-jdbc-query-into-a-variable
 public class contactDB {
     public Connection connection;
+
     public Connection getConnection() {
         String jdbcURL = "jdbc:postgresql://localhost:5432/chatDB";
         String username = "postgres";
         String password = "786";
 
         try {
-            connection = DriverManager.getConnection(jdbcURL,username,password);
+            connection = DriverManager.getConnection(jdbcURL, username, password);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -37,8 +38,8 @@ public class contactDB {
 
             PreparedStatement statement = connection.prepareStatement(sql);
 
-            statement.setObject(1, authorID+1);
-            statement.setObject(2, recipientID+1);
+            statement.setObject(1, authorID + 1);
+            statement.setObject(2, recipientID + 1);
             statement.setObject(3, message);
 
             int rows = statement.executeUpdate();
@@ -51,16 +52,17 @@ public class contactDB {
             e.printStackTrace();
         }
     }
-    public static byte [] getMessage (int authorID, int recipientID) {
+
+    public static byte[] getMessage(int authorID, int recipientID) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT message FROM messages WHERE author_id = ? AND recipient_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,authorID);
-            statement.setObject(1,recipientID);
+            statement.setObject(1, authorID);
+            statement.setObject(1, recipientID);
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 return rs.getBytes(1);
             }
             rs.close();
@@ -70,7 +72,8 @@ public class contactDB {
         }
         return null;
     }
-    public static List<Message> getAllMessages () {
+
+    public static List<Message> getAllMessages() {
         List<Message> messages = Collections.synchronizedList(new LinkedList<>());
         try {
             contactDB contactDB = new contactDB();
@@ -85,10 +88,10 @@ public class contactDB {
             ResultSet rs2 = statement2.executeQuery();
             ResultSet rs3 = statement3.executeQuery();
 
-            while (rs.next()&&rs2.next()&&rs3.next()) {
-                byte author= (byte) (rs.getByte(1)-1);
-                byte recipient= (byte) (rs2.getByte(1)-1);
-                Message m = new Message(author,recipient,rs3.getBytes(1));
+            while (rs.next() && rs2.next() && rs3.next()) {
+                byte author = (byte)(rs.getByte(1) - 1);
+                byte recipient = (byte)(rs2.getByte(1) - 1);
+                Message m = new Message(author, recipient, rs3.getBytes(1));
                 messages.add(m);
             }
             rs.close();
@@ -101,12 +104,7 @@ public class contactDB {
         return messages;
     }
 
-
-
-
-
-
-    public static void createUser(String name, Key publicKey, byte [] privateKey) {
+    public static void createUser(String name, Key publicKey, byte[] privateKey) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
@@ -140,7 +138,7 @@ public class contactDB {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.setObject(1, name);
-            statement.setObject(2,id+1);
+            statement.setObject(2, id + 1);
             int rows = statement.executeUpdate();
             if (rows > 0) {
                 System.out.println("new user inserted");
@@ -151,7 +149,8 @@ public class contactDB {
             e.printStackTrace();
         }
     }
-    public static void setPublicKey(byte [] key, int id) {
+
+    public static void setPublicKey(byte[] key, int id) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
@@ -161,7 +160,7 @@ public class contactDB {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.setObject(1, key);
-            statement.setObject(2,id+1);
+            statement.setObject(2, id + 1);
             int rows = statement.executeUpdate();
             if (rows > 0) {
                 System.out.println("new user inserted");
@@ -172,7 +171,8 @@ public class contactDB {
             e.printStackTrace();
         }
     }
-    public static void setPrivateKey(byte [] key, int id) {
+
+    public static void setPrivateKey(byte[] key, int id) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
@@ -182,7 +182,7 @@ public class contactDB {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.setObject(1, key);
-            statement.setObject(2,id+1);
+            statement.setObject(2, id + 1);
             int rows = statement.executeUpdate();
             if (rows > 0) {
                 System.out.println("new user inserted");
@@ -193,15 +193,16 @@ public class contactDB {
             e.printStackTrace();
         }
     }
-    public static String getUsername (int id) {
+
+    public static String getUsername(int id) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT username FROM users WHERE user_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,id+1);
+            statement.setObject(1, id + 1);
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 return rs.getString(1);
             }
             rs.close();
@@ -211,16 +212,17 @@ public class contactDB {
         }
         return null;
     }
-    public static PublicKey getPublicKey (int id) {
+
+    public static PublicKey getPublicKey(int id) {
         PublicKey publicKey = null;
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT public_key FROM users WHERE user_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,id+1);
+            statement.setObject(1, id + 1);
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(rs.getBytes(1)));
                 return publicKey;
             }
@@ -231,15 +233,16 @@ public class contactDB {
         }
         return publicKey;
     }
-    public static byte [] getPrivateKey (int id) {
+
+    public static byte[] getPrivateKey(int id) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT encrypted_privatekey FROM users WHERE user_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,id+1);
+            statement.setObject(1, id + 1);
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 return rs.getBytes(1);
             }
             rs.close();
@@ -250,8 +253,7 @@ public class contactDB {
         return null;
     }
 
-
-    public static List<String> getAllUsernames () {
+    public static List<String> getAllUsernames() {
         List<String> usernames = Collections.synchronizedList(new LinkedList<>());
         try {
             contactDB contactDB = new contactDB();
@@ -260,7 +262,7 @@ public class contactDB {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             ResultSet rs = statement.executeQuery();
-            while(rs.next()) {
+            while (rs.next()) {
                 usernames.add(rs.getString(1));
             }
             rs.close();
@@ -270,7 +272,8 @@ public class contactDB {
         }
         return usernames;
     }
-    public static List<PublicKey> getAllPublicKey () {
+
+    public static List<PublicKey> getAllPublicKey() {
         PublicKey publicKey;
         List<PublicKey> publicKeys = Collections.synchronizedList(new LinkedList<>());
         try {
@@ -280,7 +283,7 @@ public class contactDB {
             PreparedStatement statement = connection.prepareStatement(sql);
 
             ResultSet rs = statement.executeQuery();
-            while(rs.next()) {
+            while (rs.next()) {
                 publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(rs.getBytes(1)));
                 publicKeys.add(publicKey);
             }
@@ -291,7 +294,8 @@ public class contactDB {
         }
         return publicKeys;
     }
-    public static List<byte []> getAllPrivateKey () {
+
+    public static List<byte[]> getAllPrivateKey() {
         List<byte[]> privateKeys = Collections.synchronizedList(new LinkedList<>());
         try {
             contactDB contactDB = new contactDB();
@@ -311,21 +315,16 @@ public class contactDB {
         return privateKeys;
     }
 
-
-
-
-
-
-    public static int getID (String name) {
+    public static int getID(String name) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT user_id FROM users WHERE username = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,name);
+            statement.setObject(1, name);
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
-                return rs.getInt(1)-1;
+            if (rs.next()) {
+                return rs.getInt(1) - 1;
             }
             rs.close();
             connection.close();
@@ -334,18 +333,19 @@ public class contactDB {
         }
         return -1;
     }
-    public static int getID (byte [] key) {
+
+    public static int getID(byte[] key) {
         try {
             contactDB contactDB = new contactDB();
             Connection connection = contactDB.getConnection();
             String sql = "SELECT user_id FROM users WHERE public_key = ? OR encrypted_privatekey = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setObject(1,key);
-            statement.setObject(2,key);
+            statement.setObject(1, key);
+            statement.setObject(2, key);
 
             ResultSet rs = statement.executeQuery();
-            if(rs.next()) {
-                return rs.getInt(1)-1;
+            if (rs.next()) {
+                return rs.getInt(1) - 1;
             }
             rs.close();
             connection.close();
@@ -355,10 +355,5 @@ public class contactDB {
         return -1;
     }
 
-
-
     ///////
-
-
-
 }

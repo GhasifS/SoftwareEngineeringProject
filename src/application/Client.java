@@ -14,18 +14,27 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
 public class Client {
-    enum OutputMode {
-        MSG, GET, CMD, BYE, LST, PUB, LOG, PWD, NME, REG
-    }
-
     private final Socket socket;
     private final InputStream socketInput;
     private final OutputStream socketOutput;
     private final Map<Byte, PublicKey> publicKeys;
-    private byte id = 0;
-    protected OutputMode mode;
     private final Scanner scanner = new Scanner(System.in);
+    protected OutputMode mode;
+    private byte id = 0;
     private KeyPair keyPair;
+    enum OutputMode {
+        MSG, GET, CMD, BYE, LST, PUB, LOG, PWD, NME, REG
+    }
+
+    public Client(Socket socket) throws IOException {
+        this.socket = socket;
+        this.socketInput = socket.getInputStream();
+        this.socketOutput = socket.getOutputStream();
+        this.publicKeys = new HashMap<>();
+        this.mode = OutputMode.LOG;
+
+        System.out.println("Connected to server.\nEnter \\quit to disconnect at any time.");
+    }
 
     public static void main(String... args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         Socket socket;
@@ -44,16 +53,6 @@ public class Client {
             return;
         }
         client.run();
-    }
-
-    public Client(Socket socket) throws IOException {
-        this.socket = socket;
-        this.socketInput = socket.getInputStream();
-        this.socketOutput = socket.getOutputStream();
-        this.publicKeys = new HashMap<>();
-        this.mode = OutputMode.LOG;
-
-        System.out.println("Connected to server.\nEnter \\quit to disconnect at any time.");
     }
 
     /**
@@ -94,7 +93,7 @@ public class Client {
         while (this.socket.isConnected()) {
             switch (mode) {
                 case PWD:
-                    System.out.println("Desired password: " );
+                    System.out.println("Desired password: ");
                     input = scanner.nextLine();
                     if (modeSwitched(input)) {
                         continue;
@@ -210,7 +209,7 @@ public class Client {
         System.out.println("Disconnected from server. Shutting down.");
     }
 
-    protected boolean run (OutputMode mode, String inputOne, String inputTwo) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    protected boolean run(OutputMode mode, String inputOne, String inputTwo) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         this.mode = mode;
         byte[] output;
         while (this.socket.isConnected()) {
@@ -312,11 +311,11 @@ public class Client {
                             return false;
                         }
                     } else {
-                            reg(inputOne, aesKey);
-                            output = this.socketInput.readNBytes(4);
-                            this.id = output[3];
-                            this.mode = OutputMode.CMD;
-                            return true;
+                        reg(inputOne, aesKey);
+                        output = this.socketInput.readNBytes(4);
+                        this.id = output[3];
+                        this.mode = OutputMode.CMD;
+                        return true;
                     }
 
                 case LST:
@@ -406,7 +405,7 @@ public class Client {
         int numberOfMessages = socketInput.readNBytes(4)[3];
         for (int i = 0; i < numberOfMessages; i++) {
             byte authorID = socketInput.readNBytes(1)[0];
-                                        // for each message: authorid + numberofblocks + authorkey + recipientkey + aesblocks
+            // for each message: authorid + numberofblocks + authorkey + recipientkey + aesblocks
             byte[] message = socketInput.readNBytes(512 + 512 + socketInput.readNBytes(1)[0] * 16);
             msgLog.add(getMessage(authorID, message));
             System.out.println(getMessage(authorID, message));
@@ -492,7 +491,7 @@ public class Client {
 //    }
 
     private void get(byte friendID, byte numberToGet) throws IOException {
-        socketOutput.write(new byte[] {'G', 'E', 'T', friendID, numberToGet});
+        socketOutput.write(new byte[]{'G', 'E', 'T', friendID, numberToGet});
     }
 
     private void msg(byte recipientID, String message) throws IOException {
@@ -530,11 +529,11 @@ public class Client {
     }
 
     private void pub(byte id) throws IOException {
-        socketOutput.write(new byte[] {'P', 'U', 'B', id});
+        socketOutput.write(new byte[]{'P', 'U', 'B', id});
     }
 
     private void lst() throws IOException {
-        socketOutput.write(new byte[] {'L', 'S', 'T'});
+        socketOutput.write(new byte[]{'L', 'S', 'T'});
     }
 
     private void reg(String username, SecretKey aesKey) throws NoSuchAlgorithmException, IOException {
@@ -605,7 +604,7 @@ public class Client {
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] encryptedKey = new byte[512];
 
-                                            //     authorkey + mykey + aesblocks
+            //     authorkey + mykey + aesblocks
             System.out.println(msg.length); // should be 512 + 512 + 16 = 1040
             if (authorID != this.id) {
                 System.arraycopy(msg, 0, encryptedKey, 0, 512);
@@ -624,7 +623,7 @@ public class Client {
             return null;
         }
         if (authorID == this.id) {
-            return "You: "+message;
+            return "You: " + message;
         } else {
             return "Them: " + message;
         }

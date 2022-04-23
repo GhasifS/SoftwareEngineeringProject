@@ -10,11 +10,13 @@ public class ClientHandler extends Thread {
     final DataOutputStream dos;
     final Socket s;
     String received;
+
     public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos) {
         this.s = s;
         this.dis = dis;
         this.dos = dos;
     }
+
     @Override
     public void run() {
         stateUsername();
@@ -25,6 +27,7 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
+
     public void stateUsername() {
         while (true) {
             try {
@@ -38,17 +41,18 @@ public class ClientHandler extends Thread {
                     break;
                 }
                 //Server.createUser(received);
-                dos.writeUTF("USER CREATED: "+received);
+                dos.writeUTF("USER CREATED: " + received);
                 stateUserAddList(received);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
     public void stateUserAddList(String u1) {
         while (true) {
             try {
-          //      dos.writeUTF("Send a message to: ('SEND' - GO TO USER SEND LIST) ('QUIT' - TO EXIT)\n" + Server.users.toString());
+                //      dos.writeUTF("Send a message to: ('SEND' - GO TO USER SEND LIST) ('QUIT' - TO EXIT)\n" + Server.users.toString());
                 received = dis.readUTF();
                 if (received.equals("QUIT")) {
                     System.out.println("application.Client " + this.s + " sends exit...");
@@ -63,12 +67,12 @@ public class ClientHandler extends Thread {
                     break;
                 }
                 //if (Server.users.contains(received)) {
-              //      Server.addKeys(u1, Server.usersPublicKeys.get(received));
+                //      Server.addKeys(u1, Server.usersPublicKeys.get(received));
 
-               //     Server.addKeys(received, Server.usersPublicKeys.get(u1));
-               //     dos.writeUTF("ADDED: "+received);
-               //     stateUserMessageList(u1);
-               //     break;
+                //     Server.addKeys(received, Server.usersPublicKeys.get(u1));
+                //     dos.writeUTF("ADDED: "+received);
+                //     stateUserMessageList(u1);
+                //     break;
                 //}
                 dos.writeUTF("REFRESHED");
             } catch (IOException e) {
@@ -76,10 +80,11 @@ public class ClientHandler extends Thread {
             }
         }
     }
+
     public void stateUserMessageList(String u1) {
         while (true) {
             try {
-         //       dos.writeUTF("application.Message: ('BACK' - GO BACK TO USER ADD LIST) ('QUIT' - TO EXIT)\n" + Server.users.toString());
+                //       dos.writeUTF("application.Message: ('BACK' - GO BACK TO USER ADD LIST) ('QUIT' - TO EXIT)\n" + Server.users.toString());
                 received = dis.readUTF();
                 if (received.equals("QUIT")) {
                     System.out.println("application.Client " + this.s + " sends exit...");
@@ -93,11 +98,11 @@ public class ClientHandler extends Thread {
                     stateUserAddList(u1);
                     break;
                 }
-               // if (Server.users.contains(received)) {
+                // if (Server.users.contains(received)) {
                 //    String u2 = received;
-               //     dos.writeUTF("MESSAGING: "+u2);
-               //     stateMessage(u1, u2);
-               // }
+                //     dos.writeUTF("MESSAGING: "+u2);
+                //     stateMessage(u1, u2);
+                // }
                 dos.writeUTF("REFRESHED");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -119,15 +124,15 @@ public class ClientHandler extends Thread {
                 }
                 switch (received) {
                     case "PRINT":
-                       // String printMsg = Server.printStringMsg(u1, u2);
-                       // dos.writeUTF(printMsg);
+                        // String printMsg = Server.printStringMsg(u1, u2);
+                        // dos.writeUTF(printMsg);
                         break;
                     case "BACK":
                         dos.writeUTF("SWITCHING TO USER SEND LIST");
                         stateUserMessageList(u1);
                         break;
                     default:
-                      //  Server.sendEncMSG(u1, u2, received);
+                        //  Server.sendEncMSG(u1, u2, received);
                         dos.writeUTF("SENT");
                         break;
                 }

@@ -38,8 +38,12 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-
 public class UI extends Application {
+
+    private static final String USER_NAME = "cryptextservices";  // GMail username (just the part before "@gmail.com")
+    private static final String PASSWORD = "cryptextServices321"; // GMail password
+    private final Label myAccount = new Label();
+    public String name = "";
 
     @Override
     public void start(Stage stage) {
@@ -90,7 +94,9 @@ public class UI extends Application {
          */
 
         HBox mainWindow = gethBox(client);
-        if (mainWindow == null) return;
+        if (mainWindow == null) {
+            return;
+        }
 
         EventHandler eventHandlerLogin = new EventHandler() {
             @Override
@@ -112,16 +118,16 @@ public class UI extends Application {
                     } else if (loginUsername.getText().startsWith("\\")) {
                         loginStatus.setText("Username can not start with \\. Please try again.");
                     } else if (client.run(Client.OutputMode.REG, loginUsername.getText(), loginPassword.getText())) {
-                        name=loginUsername.getText();
-                        myAccount.setText("Your Account: "+name);
+                        name = loginUsername.getText();
+                        myAccount.setText("Your Account: " + name);
                         updateScene(stage, new Scene(mainWindow));
                     } else {
                         loginStatus.setText("UNKNOWN ERROR OCCURRED");
                     }
-                } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException | InvalidKeyException e) {
+                } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                         InvalidKeyException e) {
                     e.printStackTrace();
                 }
-
             }
         };
         loginBtn.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandlerLogin);
@@ -140,7 +146,7 @@ public class UI extends Application {
                     } else if (client.run(Client.OutputMode.REG, loginUsername.getText(), loginPassword.getText())) {
                         System.out.println(loginUsername.getText());
                         name = loginUsername.getText();
-                        myAccount.setText("Your Account: "+name);
+                        myAccount.setText("Your Account: " + name);
                         if (loginUsername.getText().contains("@")) {
                             System.out.println("SENDING EMAIL");
 
@@ -158,15 +164,13 @@ public class UI extends Application {
                     } else {
                         loginStatus.setText("UNKNOWN ERROR OCCURRED");
                     }
-
-                } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException | InvalidKeyException e) {
+                } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | SignatureException |
+                         InvalidKeyException e) {
                     e.printStackTrace();
                 }
-
             }
         };
         createBtn.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandlerCreate);
-
 
         //Setting title to the Stage
         stage.setTitle("Cryptext");
@@ -175,8 +179,6 @@ public class UI extends Application {
 
         //Displaying the contents of the stage
         stage.show();
-
-
     }
 
     private static void sendFromGMail(String from, String pass, String[] to, String subject, String body) {
@@ -197,11 +199,11 @@ public class UI extends Application {
             InternetAddress[] toAddress = new InternetAddress[to.length];
 
             // To get the array of addresses
-            for( int i = 0; i < to.length; i++ ) {
+            for (int i = 0; i < to.length; i++) {
                 toAddress[i] = new InternetAddress(to[i]);
             }
 
-            for( int i = 0; i < toAddress.length; i++) {
+            for (int i = 0; i < toAddress.length; i++) {
                 message.addRecipient(javax.mail.Message.RecipientType.TO, toAddress[i]);
             }
 
@@ -230,7 +232,6 @@ public class UI extends Application {
 
         Text contactTitle = new Text("Contacts");
         contactTitle.setFont(Font.font("", FontWeight.BLACK, 25));
-
 
         ArrayList usernames = new ArrayList();
         try {
@@ -332,12 +333,10 @@ public class UI extends Application {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         };
         sendMsg.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandlerSendMsg);
         //sendMsg.addEventHandler(KeyEvent.KEY_PRESSED.getName(KeyCode.getKeyCode("k")), eventHandlerSendMsg);
-
 
         sendingMsg.addAll(msgToSend, sendMsg);
 
@@ -351,13 +350,7 @@ public class UI extends Application {
         stage.setScene(newScene);
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         launch(args);
     }
-
-    public String name = "";
-    private Label myAccount = new Label();
-    private static String USER_NAME = "cryptextservices";  // GMail username (just the part before "@gmail.com")
-    private static String PASSWORD = "cryptextServices321"; // GMail password
-
 }

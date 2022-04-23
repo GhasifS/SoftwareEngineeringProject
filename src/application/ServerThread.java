@@ -34,17 +34,6 @@ public class ServerThread implements Runnable {
         this.messages = contactDB.getAllMessages();
     }
 
-    private static String byteToUsername(byte[] bytes) {
-        String username = "";
-        for (int i = 0; i < 16; i++) {
-            if (bytes[i] == 0) {
-                break;
-            }
-            username += (char)bytes[i];
-        }
-        return username;
-    }
-
     @Override
     public void run() {
         while (socket.isConnected()) {
@@ -59,24 +48,23 @@ public class ServerThread implements Runnable {
 //                        if (verifySigRSA(newPrivate, signature, this.publicKeys.get(this.id))) {
                         if (verifySigRSA(newPrivate, signature, contactDB.getPublicKey(this.id))) {
 //                            this.privateKeys.set(this.id, newPrivate);
-                            contactDB.setPrivateKey(newPrivate,this.id);
-                            socketOutput.write(new byte[] {'P', 'W', 'D', 'S'});
-
+                            contactDB.setPrivateKey(newPrivate, this.id);
+                            socketOutput.write(new byte[]{'P', 'W', 'D', 'S'});
                         } else {
-                            socketOutput.write(new byte[] {'P', 'W', 'D', 'F'});
+                            socketOutput.write(new byte[]{'P', 'W', 'D', 'F'});
                         }
                         break;
                     case "NME":
                         input = socketInput.readNBytes(16);
                         String username = byteToUsername(input);
-                        input = new byte[] {'N', 'M', 'E', 0};
+                        input = new byte[]{'N', 'M', 'E', 0};
 //                        if (usernames.contains(username)) {
                         if (contactDB.getAllUsernames().contains(username)) {
                             input[3] = 'F';
                         } else {
                             input[3] = 'S';
 //                            usernames.set(this.id, username);
-                            contactDB.setUsername(username,this.id);
+                            contactDB.setUsername(username, this.id);
                         }
                         socketOutput.write(input);
                         break;
@@ -99,7 +87,7 @@ public class ServerThread implements Runnable {
                                 System.arraycopy(contactDB.getPublicKey(index).getEncoded(), 0, input, 5, 550);
 
 //                                System.arraycopy(privateKeys.get(index), 0, input, 5 + 550, 2384);
-                                System.arraycopy(Objects.requireNonNull(contactDB.getPrivateKey(index)), 0, input, 5+550, 2384);
+                                System.arraycopy(Objects.requireNonNull(contactDB.getPrivateKey(index)), 0, input, 5 + 550, 2384);
                                 BigInteger time = BigInteger.valueOf(Instant.now().getEpochSecond());
                                 this.loginTimestamp = time.toByteArray();
                                 System.arraycopy(this.loginTimestamp, 0, input, 5 + 550 + 2384, this.loginTimestamp.length);
@@ -125,7 +113,7 @@ public class ServerThread implements Runnable {
 //                        usernames.add(byteToUsername(socketInput.readNBytes(16)));
 //                        publicKeys.add(KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(socketInput.readNBytes(550))));
 //                        privateKeys.add(socketInput.readNBytes(2384));
-                        contactDB.createUser(byteToUsername(socketInput.readNBytes(16)),KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(socketInput.readNBytes(550))),socketInput.readNBytes(2384));
+                        contactDB.createUser(byteToUsername(socketInput.readNBytes(16)), KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(socketInput.readNBytes(550))), socketInput.readNBytes(2384));
                         socketOutput.write(new byte[]{'R', 'E', 'G', this.id});
                         break;
                     case "LST":
@@ -159,16 +147,16 @@ public class ServerThread implements Runnable {
                     case "MSG":
                         byte recipientID = socketInput.readNBytes(1)[0];
                         //this.messages.add(new Message(this.id, recipientID, socketInput.readNBytes(512 + (16 * socketInput.readNBytes(1)[0]))));
-                        contactDB.createMessage(this.id,recipientID,socketInput.readNBytes(512 + 512 + (16 * socketInput.readNBytes(1)[0])));
+                        contactDB.createMessage(this.id, recipientID, socketInput.readNBytes(512 + 512 + (16 * socketInput.readNBytes(1)[0])));
                         break;
                     case "GET":
                         byte authorID = socketInput.readNBytes(1)[0];
                         int requestedNumber = socketInput.readNBytes(1)[0];
-                         // GET + number of messages
+                        // GET + number of messages
                         int responseLength = 3 + 1;
                         ArrayList<Message> requestedMessages = new ArrayList<>(requestedNumber);
 //                        for (int i = this.messages.size() - 1; i >= 0; i--) {
-                        for (int i = contactDB.getAllMessages().size()-1; i >=0; i--) {
+                        for (int i = contactDB.getAllMessages().size() - 1; i >= 0; i--) {
 //                            Message message = this.messages.get(i);
                             Message message = contactDB.getAllMessages().get(i);
                             if ((message.authorID == authorID && message.recipientID == this.id) || (message.authorID == this.id && message.recipientID == authorID)) {
@@ -204,6 +192,17 @@ public class ServerThread implements Runnable {
             }
         }
         System.out.println("Socket closed. Disconnecting from " + socket.getInetAddress() + ":" + socket.getPort());
+    }
+
+    private static String byteToUsername(byte[] bytes) {
+        String username = "";
+        for (int i = 0; i < 16; i++) {
+            if (bytes[i] == 0) {
+                break;
+            }
+            username += (char)bytes[i];
+        }
+        return username;
     }
 
     public static boolean verifySigRSA(byte[] input, byte[] signature, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
