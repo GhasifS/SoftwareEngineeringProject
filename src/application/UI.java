@@ -141,17 +141,18 @@ public class UI extends Application {
                         System.out.println(loginUsername.getText());
                         name = loginUsername.getText();
                         myAccount.setText("Your Account: "+name);
+                        if (loginUsername.getText().contains("@")) {
+                            System.out.println("SENDING EMAIL");
 
-                        System.out.println("SENDING EMAIL");
+                            String from = USER_NAME;
+                            String pass = PASSWORD;
+                            String email = loginUsername.getText() + "gmail.com";
+                            String[] to = {email}; // list of recipient email addresses
+                            String subject = "Welcome to Cryptext";
+                            String body = "Hello, Welcome to Cryptext! Your account is ready. You are all set to send messages to fellow Cryptext users. Get started by signing in and adding friends on the Application.";
 
-                        String from = USER_NAME;
-                        String pass = PASSWORD;
-                        String email = loginUsername.getText()+"@gmail.com";
-                        String[] to = { email }; // list of recipient email addresses
-                        String subject = "Welcome to Cryptext";
-                        String body = "Hello, Welcome to Cryptext! Your account is ready. You are all set to send messages to fellow Cryptext users. Get started by signing in and adding friends on the Application.";
-
-                        sendFromGMail(from, pass, to, subject, body);
+                            sendFromGMail(from, pass, to, subject, body);
+                        }
 
                         updateScene(stage, new Scene(mainWindow));
                     } else {
