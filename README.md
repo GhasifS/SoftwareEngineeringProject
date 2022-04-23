@@ -34,7 +34,7 @@ An end-to-end encrypted chat client and server.
 ### Installation and Setup
 1. Download the code
 2. Confirm that the correct libraries and dependencies are loaded; A `lib` folder is present that contains said libraries.
-3. Configure the VM Options of the `UI.java` instance to: `--module-path %path%;out/production --add-modules javafx.controls,javafx.fxml,java.mail`
+3. Configure the VM Options of the `UI.java` instance to: `--module-path %pathToJavaFX%;out/production --add-modules javafx.controls,javafx.fxml,java.mail`
 4. Import the `chatApp.sql` file into PostgreSQL in order to setup the database with correct tables and relations.
 5. Configure the server with the correct database connection information. Set this in `contactDB.java`
 6. Optionally configure the server and clients to connect on a different address than the default (`localhost:2020`).
