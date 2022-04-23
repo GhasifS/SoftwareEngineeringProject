@@ -7,8 +7,6 @@ A more secure way to chat.
 
 An end-to-end encrypted chat client and server.
 
-Briefly describe what your project is all about.
-
 ## Features
 ### Functional Requirements
 1. Manage account
@@ -35,9 +33,12 @@ Briefly describe what your project is all about.
 ## Getting Started
 ### Installation and Setup
 1. Download the code
-2. Configure the server with the correct database connection information. Set this in `contactDB.java`
-3. Optionally configure the server and clients to connect on a different address than the default (`localhost:2020`).
-4. Compile the code
+2. Confirm that the correct libraries and dependencies are loaded; A `lib` folder is present that contains said libraries.
+3. Configure the VM Options of the `UI.java` instance to: `--module-path %path%;out/production --add-modules javafx.controls,javafx.fxml,java.mail`
+4. Import the `chatApp.sql` file into PostgreSQL in order to setup the database with correct tables and relations.
+5. Configure the server with the correct database connection information. Set this in `contactDB.java`
+6. Optionally configure the server and clients to connect on a different address than the default (`localhost:2020`).
+7. Compile the code
 
 ### Usage
 Run Server.main to start the server. It will listen for connections on the configured port (default `2020`).
@@ -45,7 +46,7 @@ Run Client.main to start the text client. It will connect to the server on the c
 Run UI.main to start the graphical client. It will connect to the server on the configured port and address (default `localhost:2020`).
 
 ## Demo video
-Coming soon!
+https://youtu.be/s7yOMBDmo00
 
 ## Contributors
 
